@@ -3,7 +3,7 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
 
-public class Pika {
+public class Pika2{
 	private int dx, x, y;   //accelerate and position
 	private float jumpSpeed, currentSpeed;   //the speed when jump up and current speed
 	private boolean ifJump;   //jump or not
@@ -15,13 +15,13 @@ public class Pika {
 	private int direction;   //Pika direct left(-1), right(1), up(2), down(-2) or stop(0)
 	private boolean ifLeft, ifRight;   //set for true if player click the keyboard
 	
-	public Pika(){
+	public Pika2(){
 		ImageIcon icon = new ImageIcon("src/source/1-finish.gif");
-		image2 = new ImageIcon("src/source/4-finish.gif").getImage();   //撲球
 		image = icon.getImage();
+		image2 = new ImageIcon("src/source/4-finish.gif").getImage();   //撲球
 		width = image.getWidth(null);
 		height = image.getHeight(null);
-		x=20;   //initialize the x position
+		x=600;   //initialize the x position
 		y=500;   //initialize the y position
 		jumpSpeed = -10;
 		direction = 9;
@@ -38,7 +38,6 @@ public class Pika {
 	public int getY(){
 		return y;
 	}
-	
 	public int getWidth(){
 		return width;
 	}
@@ -54,13 +53,23 @@ public class Pika {
 	public boolean getIfPu(){
 		return ifPu;
 	}
-	
+
 	public Image getImage(){
 		return image;
 	}
 	
 	public Image getImage2(){
 		return image2;
+	}
+	
+	public void moveLeft(){
+		dx = -3;
+		direction = -1;
+	}
+	
+	public void moveRight(){
+		dx = 3;
+		direction = 1;
 	}
 	
 	public void move(){   //move function, when uses keyboard to control
@@ -80,47 +89,45 @@ public class Pika {
 		if(y == 500){   //on ground
 			ifJump = false;
 		}
-		if(x < 0 || x>310){
+		if(x < 410 || x>700){
 			x-=dx;
 		}
 	}
 	
-	public void moveLeft(){
-		dx = -3;
-		direction = -1;
-	}
-	
-	public void moveRight(){
-		dx = 3;
-		direction = 1;
-	}
-	
-	public void restart(){
-		x = 20;
-		y = 500;
-		ifJump = false;
-		ifPowHit = false;
-		ifPu = false;
-		ifLeft = ifRight = false;
-	}
+//	public BufferedImage transform(){
+//		try{
+//			BufferedImage si = ImageIO.read(new FileInputStream("src/source/1-finish.gif"));
+//			di = null;
+//			AffineTransform t = new AffineTransform(-1, 0, 0, 1, si.getWidth(), 0);
+//			AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
+//			di = op.filter(si, null);
+//		}
+//		catch(FileNotFoundException e){
+//			e.printStackTrace();
+//		}
+//		catch(IOException e){
+//			e.printStackTrace();
+//		}
+//		return di;
+//	}
 	
 	public void keyPressed(KeyEvent e){
 		int key = e.getKeyCode();
 		
-		if(key == KeyEvent.VK_D){
+		if(key == KeyEvent.VK_LEFT){
 			ifLeft = true;
 		}
 		
-		if(key == KeyEvent.VK_G){
+		if(key == KeyEvent.VK_RIGHT){
 			ifRight = true;
 		}
 		
-		if(key == KeyEvent.VK_R && ifJump == false){
+		if(key == KeyEvent.VK_UP && ifJump == false){
 			ifJump=true;
 			currentSpeed = jumpSpeed;
 		}
 
-		if(key == KeyEvent.VK_Z){
+		if(key == KeyEvent.VK_ENTER){
 			
 			if(ifJump == false){   //撲在地上
 				if(direction == 1){   //撲 right
@@ -138,20 +145,29 @@ public class Pika {
 		}
 	}
 	
+	public void restart(){
+		x = 600;
+		y = 500;
+		ifJump = false;
+		ifPowHit = false;
+		ifPu = false;
+		ifLeft = ifRight = false;
+	}
+	
 	public void keyReleased(KeyEvent e){
 		int key = e.getKeyCode();
 		
-		if(key == KeyEvent.VK_D){
+		if(key == KeyEvent.VK_LEFT){
+			dx = 0;
 			ifLeft = false;
-			dx = 0;
 		}
 		
-		if(key == KeyEvent.VK_G){
+		if(key == KeyEvent.VK_RIGHT){
+			dx = 0;
 			ifRight = false;
-			dx = 0;
 		}
 		
-		if(key == KeyEvent.VK_Z){
+		if(key == KeyEvent.VK_ENTER){
 			ifPu = false;
 			ifPowHit = false;
 		}
@@ -160,5 +176,4 @@ public class Pika {
 	public Rectangle getBounds(){   //check for collision
 		return new Rectangle(x, y, width, height);
 	}
-	
 }
