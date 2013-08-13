@@ -9,6 +9,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.ImageIcon;
@@ -17,12 +18,16 @@ import javax.swing.JPanel;
 public class PlayBoard extends JPanel{
 	private Timer timer;   //control the game cycle
 	private Timer timer2;   //control the ball cycle
+	private Timer timer3;   //control the hide task
 	private Pika pika1;
 	private Pika2 pika2;
 	private Ball pikaBall;
 	private Stick stick;
 	private Image bg;
 	private Record record;
+	private int roundWin;   //if 1 than 1P win, 2 than 2p win
+	private boolean roundOver;
+	private float alpha;
 //	Line2D.Double leftLine = new Line2D.Double(0, 600, 400, 600);
 //	Line2D.Double rightLine = new Line2D.Double(417, 600, 800, 600);
 	
@@ -49,9 +54,12 @@ public class PlayBoard extends JPanel{
 		record = new Record();
 		this.add(record);
 		
+		roundWin = 0;
+		roundOver = false;
+		alpha = 0f;
 	}
 	
-	private class tempAdapter extends KeyAdapter{
+	private class tempAdapter extends KeyAdapter{   //按鍵的listener
 		public void keyPressed(KeyEvent e){
 			pika1.keyPressed(e);
 			pika2.keyPressed(e);
@@ -63,7 +71,7 @@ public class PlayBoard extends JPanel{
 		}
 	}
 	
-	private class ballListener extends KeyAdapter{
+	private class ballListener extends KeyAdapter{   //球的listener
 		public void keyPressed(KeyEvent e){
 			pikaBall.keyPressed(e);
 		}
@@ -73,7 +81,7 @@ public class PlayBoard extends JPanel{
 		}
 	}
 	
-	class ScheduleTask extends TimerTask{
+	class ScheduleTask extends TimerTask{   //整個遊戲的運行
 		public void run(){
 			pika1.move();
 			pika2.move();
@@ -83,33 +91,41 @@ public class PlayBoard extends JPanel{
 		}
 	}
 	
-	class BallTask extends TimerTask{
+	class BallTask extends TimerTask{   //球的旋轉, 之後可以加上控制旋轉速度
 		public void run(){
 			pikaBall.spin();
 			repaint();
 		}
 	}
-	
-	class RestartTask1 extends TimerTask{   //球落在左邊，2P贏
+
+	class RestartTask extends TimerTask{   //球落在右邊，1P贏
 		public void run(){
-			pikaBall.restart(1);
+			if(roundWin == 1){
+				pikaBall.restart(2);
+			}
+			else{
+				pikaBall.restart(1);
+			}
 			pika1.restart();
 			pika2.restart();
 			timer.cancel();
 			timer = new Timer();
 			timer.scheduleAtFixedRate(new ScheduleTask(), 1500, 10);
-			
 		}
 	}
 	
-	class RestartTask2 extends TimerTask{   //球落在右邊，1P贏
+	class HideTask extends TimerTask{
 		public void run(){
-			pikaBall.restart(2);
-			pika1.restart();
-			pika2.restart();
-			timer.cancel();
-			timer = new Timer();
-			timer.scheduleAtFixedRate(new ScheduleTask(), 1500, 10);
+			if(alpha<0.99f){
+				alpha+=0.01f;
+			}
+			else{
+				roundOver = false;
+				alpha = 0f;
+				timer3.cancel();
+				timer3 = new Timer();
+				timer3.schedule(new RestartTask(), 0);
+			}
 		}
 	}
 	
@@ -137,24 +153,22 @@ public class PlayBoard extends JPanel{
 		/*if(r2.intersects(r3)){
 			pikaBall.hitStick();
 		}*/
-
-		if(r2.intersectsLine(leftLine)){   //球落在左邊，2P贏
-			record.plusCount2();
+		if(r2.intersectsLine(leftLine) || r2.intersectsLine(rightLine)){
+			if(r2.intersectsLine(leftLine)){   //球落在左邊，2P贏
+				record.plusCount2();
+				roundWin = 2;
+			}
+			else if(r2.intersectsLine(rightLine)){   //球落在右邊，1P贏
+				record.plusCount1();
+				roundWin = 1;
+			}
 			timer.cancel();
 			timer = new Timer();
 			timer.scheduleAtFixedRate(new ScheduleTask(), 0, 60);
 			
-			Timer timer3 = new Timer();
-			timer3.schedule(new RestartTask1(), 1500);		
-		}
-		else if(r2.intersectsLine(rightLine)){   //球落在右邊，1P贏
-			record.plusCount1();
-			timer.cancel();
-			timer = new Timer();
-			timer.scheduleAtFixedRate(new ScheduleTask(), 0, 60);
-			
-			Timer timer3 = new Timer();
-			timer3.schedule(new RestartTask2(), 1500);
+			timer3 = new Timer();
+			timer3.schedule(new HideTask(), 800, 15);
+			roundOver = true;
 		}
 	}
 	
@@ -162,9 +176,7 @@ public class PlayBoard extends JPanel{
 		
 		g.drawImage(bg, 0, 0, this);   //draw background
 		super.paint(g);
-		Graphics2D g2D = (Graphics2D)g;
-		AlphaComposite comp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f);
-		g2D.setComposite(comp);
+		Graphics2D g2D = (Graphics2D)g.create();
 		
 		if(pika1.getIfPu() == false){
 			g2D.drawImage(pika1.getImage(), pika1.getX(), pika1.getY(), 100, 100, this);
@@ -185,9 +197,22 @@ public class PlayBoard extends JPanel{
 		
 		g2D.drawImage(stick.getImage(), stick.getX(), stick.getY(), this);
 		g2D.rotate(Math.toDegrees(pikaBall.getAngle()), pikaBall.getX()+pikaBall.getWidth()/2, pikaBall.getY()+pikaBall.getHeight()/2);
-		g2D.drawImage(pikaBall.getImage(), pikaBall.getX(), pikaBall.getY(), this);
+		g2D.drawImage(pikaBall.getImage(), pikaBall.getX(), pikaBall.getY(), this);		
 		
 		Toolkit.getDefaultToolkit().sync();
-		g.dispose();	
+		g2D.dispose();   //close the g2D draw
+		
+		if(roundOver == true){
+			g2D = (Graphics2D)g.create();
+			Rectangle hideR = new Rectangle(0, 0, 800, 700);
+			AlphaComposite comp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
+			g2D.setComposite(comp);
+			g2D.fill(hideR);
+			
+			Toolkit.getDefaultToolkit().sync();
+			g2D.dispose();
+		}
+		
+		g.dispose();
 	}
 }
