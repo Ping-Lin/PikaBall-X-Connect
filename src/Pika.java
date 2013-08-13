@@ -1,6 +1,8 @@
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.ImageIcon;
 
 public class Pika {
@@ -14,6 +16,8 @@ public class Pika {
 	private int width, height;   //width and height of image
 	private int direction;   //Pika direct left(-1), right(1), up(2), down(-2) or stop(0)
 	private boolean ifLeft, ifRight;   //set for true if player click the keyboard
+	private Timer timer;
+	private int tempX;   //calculate distance of Pu
 	
 	public Pika(){
 		ImageIcon icon = new ImageIcon("src/source/1-finish.gif");
@@ -29,6 +33,7 @@ public class Pika {
 		ifPowHit = false;
 		ifPu = false;
 		ifLeft = ifRight = false;
+		tempX = 0;
 	}
 	
 	public int getX(){
@@ -104,6 +109,18 @@ public class Pika {
 		ifLeft = ifRight = false;
 	}
 	
+	class PuTask extends TimerTask{   //Pu的移動
+		public void run(){
+			x+=5;
+			tempX+=5;
+			if(tempX == 50){
+				tempX = 0;
+				ifPu = false;
+				timer.cancel();
+			}
+		}
+	}
+	
 	public void keyPressed(KeyEvent e){
 		int key = e.getKeyCode();
 		
@@ -125,7 +142,9 @@ public class Pika {
 			if(ifJump == false){   //撲在地上
 				if(direction == 1){   //撲 right
 					ifPu = true;
-					x+=50;
+					timer = new Timer();
+					timer.scheduleAtFixedRate(new PuTask(), 0, 50);
+					//x+=50;
 				}
 				if(direction == -1){   //撲 left
 					ifPu = true;
@@ -152,7 +171,7 @@ public class Pika {
 		}
 		
 		if(key == KeyEvent.VK_Z){
-			ifPu = false;
+			//ifPu = false;
 			ifPowHit = false;
 		}
 	}
