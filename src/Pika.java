@@ -1,8 +1,15 @@
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 public class Pika {
@@ -15,25 +22,24 @@ public class Pika {
 	private Image image2;
 	private int width, height;   //width and height of image
 	private int direction;   //Pika direct left(-1), right(1), up(2), down(-2) or stop(0)
-	private boolean ifLeft, ifRight;   //set for true if player click the keyboard
+	private boolean ifLeft, ifRight, ifZ;   //set for true if player click the keyboard
 	private Timer timer;
-	private int tempX;   //calculate distance of Pu
+	private long tmp;   //code at PuTask, help for calculating distance of Pu
 	
 	public Pika(){
 		ImageIcon icon = new ImageIcon("src/source/1-finish.gif");
-		image2 = new ImageIcon("src/source/4-finish.gif").getImage();   //撲球
 		image = icon.getImage();
+		image2 = (Image)transform("src/source/4-1.png");
 		width = image.getWidth(null);
 		height = image.getHeight(null);
 		x=20;   //initialize the x position
 		y=500;   //initialize the y position
 		jumpSpeed = -10;
-		direction = 9;
+		direction = 0;
 		ifJump = false;
 		ifPowHit = false;
 		ifPu = false;
-		ifLeft = ifRight = false;
-		tempX = 0;
+		ifLeft = ifRight = ifZ = false;
 	}
 	
 	public int getX(){
@@ -70,10 +76,10 @@ public class Pika {
 	
 	public void move(){   //move function, when uses keyboard to control
 		
-		if(ifLeft == true){
+		if(ifLeft == true && ifPu == false){
 			moveLeft();
 		}
-		if(ifRight == true){
+		if(ifRight == true && ifPu == false){
 			moveRight();
 		}
 		
@@ -106,17 +112,87 @@ public class Pika {
 		ifJump = false;
 		ifPowHit = false;
 		ifPu = false;
-		ifLeft = ifRight = false;
+		ifLeft = ifRight = ifZ = false;
 	}
 	
-	class PuTask extends TimerTask{   //Pu的移動
+	public BufferedImage transform(String src){
+		BufferedImage di = null;
+		try{
+			BufferedImage si = ImageIO.read(new FileInputStream(src));
+			AffineTransform t = new AffineTransform(-1, 0, 0, 1, si.getWidth(), 0);
+			AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
+			di = op.filter(si, null);
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return di;
+	}
+	
+	class PuTask extends TimerTask{   //Pu move, with execution time change, change the image of pu
 		public void run(){
-			x+=5;
-			tempX+=5;
-			if(tempX == 50){
-				tempX = 0;
+			if(ifZ==false){   //if pu, then can't move directly, ifZ can help to set up the tmp time		
+				dx = 0;
+				tmp = this.scheduledExecutionTime();
+				ifZ = true;
+			}
+			
+			if (this.scheduledExecutionTime()-tmp>=600){   //check for the execution time. If bigger than 0.6s, then cancel the thread
+				direction = 0;   //initialize
 				ifPu = false;
 				timer.cancel();
+			}
+			else if (this.scheduledExecutionTime()-tmp>400){   //4-3圖
+				if(direction == 1){   //撲右
+					image2 = new ImageIcon("src/source/4-3.png").getImage();
+				}
+				else if(direction == -1){   //撲左
+					image2 = transform("src/source/4-3.png");
+				}
+			}
+			else if (this.scheduledExecutionTime()-tmp>100){   //4-2圖
+				if(direction == 1){   //撲右
+					image2 = new ImageIcon("src/source/4-2.png").getImage();
+					x+=7;
+					if(x>305){
+						x = 305;
+					}
+				}
+				else if(direction == -1){   //撲左
+					image2 = transform("src/source/4-2.png");
+					x-=7;
+					if(x<=0){
+						x = 0;
+					}
+				}
+				//y改變
+				if(this.scheduledExecutionTime()-tmp<200) //0~199
+					y-=2;   //往上飛一點
+				else{   //200~399
+					y+=2;   //往下飛一點
+					if(y >= 500)
+						y = 500;   //防止超過底線
+				}
+			}
+			else if (this.scheduledExecutionTime()-tmp<=100){   //4-1圖
+				if(direction == 1){   //撲右
+					image2 = new ImageIcon("src/source/4-1.png").getImage();
+					x+=7;
+					if(x>305){
+						x = 305;
+					}
+				}
+				else if(direction == -1){   //撲左
+					image2 = (Image)transform("src/source/4-1.png");
+					x-=7;
+					if(x<=0){
+						x = 0;
+					}
+				}
+				y-=2;   //往上飛一點
 			}
 		}
 	}
@@ -124,36 +200,39 @@ public class Pika {
 	public void keyPressed(KeyEvent e){
 		int key = e.getKeyCode();
 		
+		if(key == KeyEvent.VK_R && ifJump == false && ifPu == false){
+			ifJump=true;
+			currentSpeed = jumpSpeed;
+		}
+
+		else if(key == KeyEvent.VK_Z){
+			if(ifJump == true){   //在空中
+				ifPowHit = true;
+			}
+			else{
+				if(ifPu == false){   //撲在地上
+					if(direction == 1){   //撲 right
+						ifPu = true;
+						ifZ = false;
+						timer = new Timer();
+						timer.scheduleAtFixedRate(new PuTask(), 0, 20);
+					}
+					if(direction == -1){   //撲 left
+						ifPu = true;
+						ifZ = false;
+						timer = new Timer();
+						timer.scheduleAtFixedRate(new PuTask(), 0, 20);
+					}
+				}
+			}
+		}
+		
 		if(key == KeyEvent.VK_D){
 			ifLeft = true;
 		}
 		
 		if(key == KeyEvent.VK_G){
 			ifRight = true;
-		}
-		
-		if(key == KeyEvent.VK_R && ifJump == false){
-			ifJump=true;
-			currentSpeed = jumpSpeed;
-		}
-
-		if(key == KeyEvent.VK_Z){
-			
-			if(ifJump == false){   //撲在地上
-				if(direction == 1){   //撲 right
-					ifPu = true;
-					timer = new Timer();
-					timer.scheduleAtFixedRate(new PuTask(), 0, 50);
-					//x+=50;
-				}
-				if(direction == -1){   //撲 left
-					ifPu = true;
-					x-=50;
-				}
-			}
-			else{   //在空中
-				ifPowHit = true;
-			}
 		}
 	}
 	
@@ -171,7 +250,6 @@ public class Pika {
 		}
 		
 		if(key == KeyEvent.VK_Z){
-			//ifPu = false;
 			ifPowHit = false;
 		}
 	}
