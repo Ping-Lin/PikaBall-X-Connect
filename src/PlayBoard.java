@@ -57,6 +57,7 @@ public class PlayBoard extends JPanel{
 		roundWin = 0;
 		roundOver = false;
 		alpha = 0f;
+
 	}
 	
 	private class tempAdapter extends KeyAdapter{   //按鍵的listener
@@ -83,6 +84,8 @@ public class PlayBoard extends JPanel{
 	
 	class ScheduleTask extends TimerTask{   //整個遊戲的運行
 		public void run(){
+			pika1.ifStart = true;
+			pika2.ifStart = true;
 			pika1.move();
 			pika2.move();
 			pikaBall.move();
@@ -100,6 +103,7 @@ public class PlayBoard extends JPanel{
 
 	class RestartTask extends TimerTask{   //球落在右邊，1P贏
 		public void run(){
+			timer.cancel();
 			if(roundWin == 1){
 				pikaBall.restart(2);
 			}
@@ -108,9 +112,9 @@ public class PlayBoard extends JPanel{
 			}
 			pika1.restart();
 			pika2.restart();
-			timer.cancel();
 			timer = new Timer();
 			timer.scheduleAtFixedRate(new ScheduleTask(), 1500, 10);
+			timer3.cancel();
 		}
 	}
 	
@@ -141,11 +145,11 @@ public class PlayBoard extends JPanel{
 		Line2D.Double leftLine = new Line2D.Double(0, 600, 410, 600);
 		Line2D.Double rightLine = new Line2D.Double(410, 600, 800, 600);
 		
-		if(r1.intersects(r2)){
+		if(r1.intersects(r2)){   //pika1撞球
 			float d = ((float)pikaBall.getX()+(float)pikaBall.getWidth()/2f)-((float)pika1.getX()+(float)pika1.getWidth()/2f);		
 			pikaBall.hit(d, pika1.getPowHit());
 		}
-		else if(r4.intersects(r2)){
+		else if(r4.intersects(r2)){   //pika2撞球
 			float d = ((float)pikaBall.getX()+(float)pikaBall.getWidth()/2f)-((float)pika2.getX()+(float)pika2.getWidth()/2f);		
 			pikaBall.hit(d, pika2.getPowHit());
 		}
@@ -153,7 +157,7 @@ public class PlayBoard extends JPanel{
 		/*if(r2.intersects(r3)){
 			pikaBall.hitStick();
 		}*/
-		if(r2.intersectsLine(leftLine) || r2.intersectsLine(rightLine)){
+		if(r2.intersectsLine(leftLine) || r2.intersectsLine(rightLine)){   //球落地
 			if(r2.intersectsLine(leftLine)){   //球落在左邊，2P贏
 				record.plusCount2();
 				roundWin = 2;
@@ -167,8 +171,10 @@ public class PlayBoard extends JPanel{
 			timer.scheduleAtFixedRate(new ScheduleTask(), 0, 60);
 			
 			timer3 = new Timer();
-			timer3.schedule(new HideTask(), 800, 15);
+			timer3.schedule(new HideTask(), 700, 15);
 			roundOver = true;
+			pika1.ifStart = false;
+			pika2.ifStart = false;
 		}
 	}
 	
@@ -178,18 +184,30 @@ public class PlayBoard extends JPanel{
 		super.paint(g);
 		Graphics2D g2D = (Graphics2D)g.create();
 		
-		if(pika1.getIfPu() == false){
-			g2D.drawImage(pika1.getImage(), pika1.getX(), pika1.getY(), 100, 100, this);
+		if(pika1.getIfJump() == true){
+			if(pika1.getPowHit() == true)
+				g2D.drawImage(pika1.getImage4(), pika1.getX(), pika1.getY(), 100, 100, this);
+			else
+				g2D.drawImage(pika1.getImage3(), pika1.getX(), pika1.getY(), 100, 100, this);
 		}
-		else{
+		else if(pika1.getIfPu() == true){
 			g2D.drawImage(pika1.getImage2(), pika1.getX(), pika1.getY(), 100, 100, this);
 		}
-	
-		if(pika2.getIfPu() == false){
-			g2D.drawImage(pika2.getImage(), pika2.getX(), pika2.getY(), 100, 100, this);
+		else {
+			g2D.drawImage(pika1.getImage(), pika1.getX(), pika1.getY(), 100, 100, this);
+		}
+		
+		if(pika2.getIfJump() == true){
+			if(pika2.getPowHit() == true)
+				g2D.drawImage(pika2.getImage4(), pika2.getX(), pika2.getY(), 100, 100, this);
+			else
+				g2D.drawImage(pika2.getImage3(), pika2.getX(), pika2.getY(), 100, 100, this);
+		}
+		else if(pika2.getIfPu() == true){
+			g2D.drawImage(pika2.getImage2(), pika2.getX(), pika2.getY(), 100, 100, this);
 		}
 		else{
-			g2D.drawImage(pika2.getImage2(), pika2.getX(), pika2.getY(), 100, 100, this);
+			g2D.drawImage(pika2.getImage(), pika2.getX(), pika2.getY(), 100, 100, this);
 		}
 		
 //		g2D.draw(leftLine);

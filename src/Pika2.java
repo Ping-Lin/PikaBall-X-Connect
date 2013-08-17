@@ -18,18 +18,20 @@ public class Pika2{
 	private boolean ifJump;   //jump or not
 	private boolean ifPowHit;   //power hit, direct left(-1), right(1), up(2), down(-2), only enter(0)
 	private boolean ifPu;
-	private Image image;
-	private Image image2;
+	private Image image, image2, image3, image4;   //walk, pu, jump, hit
 	private int width, height;   //width and height of image
 	private int direction;   //Pika direct left(-1), right(1), up(2), down(-2) or stop(0)
 	private boolean ifLeft, ifRight, ifZ;   //set for true if player click the keyboard
-	private Timer timer;
+	private Timer timer, timer2;
 	private long tmp;   //code at PuTask, help for calculating distance of Pu
+	public boolean ifStart;
 	
 	public Pika2(){
 		ImageIcon icon = new ImageIcon("src/source/1-finish-2.gif");
 		image = icon.getImage();
 		image2 = (Image)transform("src/source/4-1.png");
+		image3 = new ImageIcon("src/source/2-finish-2.gif").getImage();
+		image4 = (Image)transform("src/source/3-1.png");
 		width = image.getWidth(null);
 		height = image.getHeight(null);
 		x=660;   //initialize the x position
@@ -40,6 +42,7 @@ public class Pika2{
 		ifPowHit = false;
 		ifPu = false;
 		ifLeft = ifRight = ifZ = false;
+		ifStart = true;
 	}
 	
 	public int getX(){
@@ -65,6 +68,10 @@ public class Pika2{
 	public boolean getIfPu(){
 		return ifPu;
 	}
+	
+	public boolean getIfJump(){
+		return ifJump;
+	}
 
 	public Image getImage(){
 		return image;
@@ -72,6 +79,14 @@ public class Pika2{
 	
 	public Image getImage2(){
 		return image2;
+	}
+	
+	public Image getImage3(){
+		return image3;
+	}
+	
+	public Image getImage4(){
+		return image4;
 	}
 	
 	public void move(){   //move function, when uses keyboard to control
@@ -112,7 +127,7 @@ public class Pika2{
 		ifJump = false;
 		ifPowHit = false;
 		ifPu = false;
-		ifLeft = ifRight = ifZ = false;
+		ifLeft = ifRight = ifZ = ifStart = false;
 	}
 	
 	public BufferedImage transform(String src){
@@ -142,8 +157,9 @@ public class Pika2{
 			
 			if (this.scheduledExecutionTime()-tmp>=600){   //check for the execution time. If bigger than 0.6s, then cancel the thread
 				direction = 0;   //initialize
-				ifPu = false;
 				timer.cancel();
+				ifPu = false;
+				ifZ = false;
 			}
 			else if (this.scheduledExecutionTime()-tmp>400){   //4-3圖
 				if(direction == 1){   //撲右
@@ -197,43 +213,74 @@ public class Pika2{
 		}
 	}
 	
-	public void keyPressed(KeyEvent e){
-		int key = e.getKeyCode();
-		
-		if(key == KeyEvent.VK_UP && ifJump == false && ifPu == false){
-			ifJump=true;
-			currentSpeed = jumpSpeed;
-		}
-
-		if(key == KeyEvent.VK_ENTER){
-			
-			if(ifJump == true){   //在空中
-				ifPowHit = true;
+	class HitTask extends TimerTask{
+		public void run(){
+			if(ifZ==false){   //if pu, then can't move directly, ifZ can help to set up the tmp time		
+				tmp = this.scheduledExecutionTime();
+				ifZ = true;
 			}
-			else{
-				if(ifPu == false){   //撲在地上
-					if(direction == 1){   //撲 right
-						ifPu = true;
-						ifZ = false;
-						timer = new Timer();
-						timer.scheduleAtFixedRate(new PuTask(), 0, 20);
-					}
-					if(direction == -1){   //撲 left
-						ifPu = true;
-						ifZ = false;
-						timer = new Timer();
-						timer.scheduleAtFixedRate(new PuTask(), 0, 20);
+			
+			if (this.scheduledExecutionTime()-tmp>=700){   //check for the execution time. If bigger than 0.6s, then cancel the thread
+				timer2.cancel();
+				ifPowHit = false;
+				ifZ = false;
+			}
+			else if (this.scheduledExecutionTime()-tmp>600){   //3-5圖
+				image4 = (Image)transform("src/source/3-5.png");
+			}
+			else if (this.scheduledExecutionTime()-tmp>500){   //3-4圖
+				image4 = (Image)transform("src/source/3-4.png");
+			}
+			else if (this.scheduledExecutionTime()-tmp>400){   //3-3圖
+				image4 = (Image)transform("src/source/3-3.png");
+			}
+			else if (this.scheduledExecutionTime()-tmp > 100){   //3-2圖
+				image4 = (Image)transform("src/source/3-2.png");
+			}
+			else if (this.scheduledExecutionTime()-tmp <= 100){   //3-1圖
+				image4 = (Image)transform("src/source/3-1.png");
+			}
+		}
+	}
+	
+	public void keyPressed(KeyEvent e){
+		if(ifStart == true){
+			int key = e.getKeyCode();
+			
+			if(key == KeyEvent.VK_UP && ifJump == false && ifPu == false){
+				ifJump=true;
+				currentSpeed = jumpSpeed;
+			}
+	
+			if(key == KeyEvent.VK_ENTER && ifZ == false){			
+				if(ifJump == true){   //在空中
+					ifPowHit = true;
+					timer2 = new Timer();
+					timer2.scheduleAtFixedRate(new HitTask(), 0, 20);
+				}
+				else{
+					if(ifPu == false){   //撲在地上
+						if(direction == 1){   //撲 right
+							ifPu = true;
+							timer = new Timer();
+							timer.scheduleAtFixedRate(new PuTask(), 0, 20);
+						}
+						if(direction == -1){   //撲 left
+							ifPu = true;
+							timer = new Timer();
+							timer.scheduleAtFixedRate(new PuTask(), 0, 20);
+						}
 					}
 				}
 			}
-		}
-		
-		if(key == KeyEvent.VK_LEFT){
-			ifLeft = true;
-		}
-		
-		if(key == KeyEvent.VK_RIGHT){
-			ifRight = true;
+			
+			if(key == KeyEvent.VK_LEFT){
+				ifLeft = true;
+			}
+			
+			if(key == KeyEvent.VK_RIGHT){
+				ifRight = true;
+			}
 		}
 	}
 	
@@ -248,10 +295,6 @@ public class Pika2{
 		if(key == KeyEvent.VK_RIGHT){
 			ifRight = false;
 			dx = 0;
-		}
-		
-		if(key == KeyEvent.VK_ENTER){
-			ifPowHit = false;
 		}
 	}
 	
