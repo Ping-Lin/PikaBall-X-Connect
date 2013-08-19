@@ -30,6 +30,8 @@ public class PlayBoard extends JPanel{
 	private float alpha;
 //	Line2D.Double leftLine = new Line2D.Double(0, 600, 400, 600);
 //	Line2D.Double rightLine = new Line2D.Double(417, 600, 800, 600);
+//	Line2D.Double leftStickLine = new Line2D.Double(400, 375, 400, 600);
+//	Line2D.Double rightStickLine = new Line2D.Double(417, 375, 417, 600);
 	
 	public PlayBoard(){
 		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
@@ -48,7 +50,7 @@ public class PlayBoard extends JPanel{
 		stick = new Stick();
 		timer = new Timer();
 		timer2 = new Timer();
-		timer.scheduleAtFixedRate(new ScheduleTask(), 3000, 10);
+		timer.scheduleAtFixedRate(new ScheduleTask(), 3000, 12);
 		timer2.scheduleAtFixedRate(new BallTask(), 3000, 100);
 			
 		record = new Record();
@@ -113,7 +115,7 @@ public class PlayBoard extends JPanel{
 			pika1.restart();
 			pika2.restart();
 			timer = new Timer();
-			timer.scheduleAtFixedRate(new ScheduleTask(), 1500, 10);
+			timer.scheduleAtFixedRate(new ScheduleTask(), 1500, 12);
 			timer3.cancel();
 		}
 	}
@@ -140,23 +142,29 @@ public class PlayBoard extends JPanel{
 	private void collision(){
 		Rectangle r1 = pika1.getBounds();
 		Rectangle r2 = pikaBall.getBounds();
-		Rectangle r3 = stick.getBounds();
 		Rectangle r4 = pika2.getBounds();
 		Line2D.Double leftLine = new Line2D.Double(0, 600, 410, 600);
 		Line2D.Double rightLine = new Line2D.Double(410, 600, 800, 600);
+		Line2D.Double leftStickLine = new Line2D.Double(400, 375, 400, 600);
+		Line2D.Double rightStickLine = new Line2D.Double(417, 375, 417, 600);
+		Line2D.Double upStickLine = new Line2D.Double(400, 375, 416, 375);
+		
 		
 		if(r1.intersects(r2)){   //pika1撞球
 			float d = ((float)pikaBall.getX()+(float)pikaBall.getWidth()/2f)-((float)pika1.getX()+(float)pika1.getWidth()/2f);		
-			pikaBall.hit(d, pika1.getPowHit());
+			pikaBall.hit(d, pika1.getPowHit(), 1);
 		}
 		else if(r4.intersects(r2)){   //pika2撞球
 			float d = ((float)pikaBall.getX()+(float)pikaBall.getWidth()/2f)-((float)pika2.getX()+(float)pika2.getWidth()/2f);		
-			pikaBall.hit(d, pika2.getPowHit());
+			pikaBall.hit(d, pika2.getPowHit(), 2);
 		}
-		
-		/*if(r2.intersects(r3)){
+		if(r2.intersectsLine(upStickLine)){   //撞到柱子上面
+			pikaBall.hitUpStick();
+		}
+		else if(r2.intersectsLine(rightStickLine) || r2.intersectsLine(leftStickLine)){   //撞到柱子左邊和右邊
 			pikaBall.hitStick();
-		}*/
+		}	
+		
 		if(r2.intersectsLine(leftLine) || r2.intersectsLine(rightLine)){   //球落地
 			if(r2.intersectsLine(leftLine)){   //球落在左邊，2P贏
 				record.plusCount2();
@@ -212,8 +220,10 @@ public class PlayBoard extends JPanel{
 		
 //		g2D.draw(leftLine);
 //		g2D.draw(rightLine);
+//		g2D.draw(leftStickLine);
+//		g2D.draw(rightStickLine);
 		
-		g2D.drawImage(stick.getImage(), stick.getX(), stick.getY(), this);
+		g2D.drawImage(stick.getImage(), stick.getX(), stick.getY(), 17, 225, this);
 		g2D.rotate(Math.toDegrees(pikaBall.getAngle()), pikaBall.getX()+pikaBall.getWidth()/2, pikaBall.getY()+pikaBall.getHeight()/2);
 		g2D.drawImage(pikaBall.getImage(), pikaBall.getX(), pikaBall.getY(), this);		
 		

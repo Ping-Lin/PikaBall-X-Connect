@@ -34,7 +34,7 @@ public class Pika2{
 		image4 = (Image)transform("src/source/3-1.png");
 		width = image.getWidth(null);
 		height = image.getHeight(null);
-		x=660;   //initialize the x position
+		x=670;   //initialize the x position
 		y=500;   //initialize the y position
 		jumpSpeed = -10;
 		direction = 0;
@@ -122,7 +122,7 @@ public class Pika2{
 	}
 	
 	public void restart(){
-		x = 660;
+		x = 670;
 		y = 500;
 		ifJump = false;
 		ifPowHit = false;
@@ -220,7 +220,7 @@ public class Pika2{
 				ifZ = true;
 			}
 			
-			if (this.scheduledExecutionTime()-tmp>=700){   //check for the execution time. If bigger than 0.6s, then cancel the thread
+			if (this.scheduledExecutionTime()-tmp>=620){   //check for the execution time. If bigger than 0.6s, then cancel the thread
 				timer2.cancel();
 				ifPowHit = false;
 				ifZ = false;
