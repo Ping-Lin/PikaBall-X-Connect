@@ -10,7 +10,7 @@ public class Stick {
 		ImageIcon icon = new ImageIcon("src/source/stick.jpg");
 		image = icon.getImage();
 		x=400;
-		y=365;
+		y=375;
 		width = image.getWidth(null);
 		height = image.getHeight(null);
 	}

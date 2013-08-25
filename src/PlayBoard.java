@@ -10,6 +10,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.ImageIcon;
@@ -28,12 +30,82 @@ public class PlayBoard extends JPanel{
 	private int roundWin;   //if 1 than 1P win, 2 than 2p win
 	private boolean roundOver;
 	private float alpha;
+	private vsPlayerClient clientskt;
+	private vsPlayerServer serverskt;
+	private boolean isServer;
 //	Line2D.Double leftLine = new Line2D.Double(0, 600, 400, 600);
 //	Line2D.Double rightLine = new Line2D.Double(417, 600, 800, 600);
 //	Line2D.Double leftStickLine = new Line2D.Double(400, 375, 400, 600);
 //	Line2D.Double rightStickLine = new Line2D.Double(417, 375, 417, 600);
 	
 	public PlayBoard(){
+		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
+		bg = icon.getImage();
+		this.addKeyListener(new tempAdapter());   //add listener to board
+		this.addKeyListener(new ballListener());
+		this.setFocusable(true);   //set for controlling the component on the game board
+		this.setBackground(Color.BLACK);
+		this.setDoubleBuffered(true);   //memory associated
+		this.setLayout(null);
+		this.setOpaque(false);
+	
+		pika1 = new Pika();
+		pika2 = new Pika2();
+		pikaBall = new Ball();
+		stick = new Stick();
+		timer = new Timer();
+		timer2 = new Timer();
+		timer.scheduleAtFixedRate(new ScheduleTask(), 3000, 12);
+		timer2.scheduleAtFixedRate(new BallTask(), 3000, 100);
+			
+		record = new Record();
+		this.add(record);
+		
+		roundWin = 0;
+		roundOver = false;
+		alpha = 0f;
+
+	}
+	
+	public PlayBoard(Socket client){
+		
+		clientskt = new vsPlayerClient(client);
+		isServer = false;
+		clientskt.start();
+		
+		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
+		bg = icon.getImage();
+		this.addKeyListener(new tempAdapter());   //add listener to board
+		this.addKeyListener(new ballListener());
+		this.setFocusable(true);   //set for controlling the component on the game board
+		this.setBackground(Color.BLACK);
+		this.setDoubleBuffered(true);   //memory associated
+		this.setLayout(null);
+		this.setOpaque(false);
+	
+		pika1 = new Pika();
+		pika2 = new Pika2();
+		pikaBall = new Ball();
+		stick = new Stick();
+		timer = new Timer();
+		timer2 = new Timer();
+		timer.scheduleAtFixedRate(new ScheduleTask(), 3000, 12);
+		timer2.scheduleAtFixedRate(new BallTask(), 3000, 100);
+			
+		record = new Record();
+		this.add(record);
+		
+		roundWin = 0;
+		roundOver = false;
+		alpha = 0f;
+
+	}
+	
+	public PlayBoard(ServerSocket server, Socket client){
+		serverskt = new vsPlayerServer(server, client);
+		isServer = true;
+		serverskt.start();
+		
 		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
 		bg = icon.getImage();
 		this.addKeyListener(new tempAdapter());   //add listener to board
