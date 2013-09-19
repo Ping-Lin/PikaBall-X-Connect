@@ -25,7 +25,7 @@ public class ConnectMenu {
         singleORcon.addMouseListener(new Listener());
         bgPanel.add(singleORcon);
 
-        frame.setTitle("單機或連線");
+        frame.setTitle("連線");
         frame.add(bgPanel);
         frame.setSize(600, 280);
         frame.setLocationRelativeTo(frame); //視窗置中

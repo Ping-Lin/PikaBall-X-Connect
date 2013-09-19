@@ -19,7 +19,7 @@ import java.util.TimerTask;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-public class PlayBoard extends JPanel{
+public class PlayBoard2 extends JPanel{
 	private Timer timer;   //control the game cycle
 	private Timer timer2;   //control the ball cycle
 	private Timer timer3;   //control the hide task
@@ -35,41 +35,12 @@ public class PlayBoard extends JPanel{
 	private vsPlayerClient clientskt;
 	private vsPlayerServer serverskt;
 	private boolean isServer;
-
 //	Line2D.Double leftLine = new Line2D.Double(0, 600, 400, 600);
 //	Line2D.Double rightLine = new Line2D.Double(417, 600, 800, 600);
 //	Line2D.Double leftStickLine = new Line2D.Double(400, 375, 400, 600);
 //	Line2D.Double rightStickLine = new Line2D.Double(417, 375, 417, 600);
-	
-	public PlayBoard(){
-		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
-		bg = icon.getImage();
-		this.addKeyListener(new tempAdapter());   //add listener to board
-		this.addKeyListener(new ballListener());
-		this.setFocusable(true);   //set for controlling the component on the game board
-		this.setBackground(Color.BLACK);
-		this.setDoubleBuffered(true);   //memory associated
-		this.setLayout(null);
-		this.setOpaque(false);
-	
-		pika1 = new Pika();
-		pika2 = new Pika2();
-		pikaBall = new Ball();
-		stick = new Stick();
-		timer = new Timer();
-		timer2 = new Timer();
-		timer.scheduleAtFixedRate(new ScheduleTask(), 3000, 12);
-		timer2.scheduleAtFixedRate(new BallTask(), 3000, 100);
-			
-		record = new Record();
-		this.add(record);
-		
-		roundWin = 0;
-		roundOver = false;
-		alpha = 0f;
-	}
-	
-	public PlayBoard(InetAddress host, int port){
+
+	public PlayBoard2(InetAddress chost, int port){
 		
 		ImageIcon icon = new ImageIcon("src/source/bg.jpg");
 		bg = icon.getImage();
@@ -96,21 +67,21 @@ public class PlayBoard extends JPanel{
 		roundWin = 0;
 		roundOver = false;
 		alpha = 0f;
-
-		clientskt = new vsPlayerClient(host, port);
-		isServer = false;
-		clientskt.start();
+		
+		serverskt = new vsPlayerServer(chost, port);
+		isServer = true;
+		serverskt.start();
 	}
-
+	
 	private class tempAdapter extends KeyAdapter{   //按鍵的listener
 		public void keyPressed(KeyEvent e){
 			pika1.keyPressed(e);
-			//pika2.keyPressed(e);
+			pika2.keyPressed(e);
 		}
 		
 		public void keyReleased(KeyEvent e){
 			pika1.keyReleased(e);
-			//pika2.keyReleased(e);
+			pika2.keyReleased(e);
 		}
 	}
 	
@@ -128,11 +99,12 @@ public class PlayBoard extends JPanel{
 		public void run(){
 			pika1.ifStart = true;
 			pika2.ifStart = true;
-			pika1.move();
-			pika2.setX(clientskt.getPika2PosX());   //從客戶端接收pika1的位置
-			pika2.setY(clientskt.getPika2PosY());   //從客戶端接收pika1的位置
+			pika1.setX(serverskt.getPika1PosX());   //從客戶端接收pika1的位置
+			pika1.setY(serverskt.getPika1PosY());   //從客戶端接收pika1的位置
+			pika2.move();
+			serverskt.pikaOutPut(Integer.toString(pika2.getX()), Integer.toString(pika2.getY()));   //丟出給客戶端
+			pikaBall.setXY(serverskt.getPikaBallPosX(), serverskt.getPikaBallPosY());
 			pikaBall.move();
-			clientskt.pikaOutPut(Integer.toString(pika1.getX()), Integer.toString(pika1.getY()), Integer.toString(pikaBall.getX()), Integer.toString(pikaBall.getY()));   //將pika1和ball的資料給server端
 			collision();
 			repaint();
 		}

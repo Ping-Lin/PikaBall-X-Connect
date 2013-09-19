@@ -31,6 +31,11 @@ public class Ball {
 		ifLeft = ifRight = ifUp = ifDown = ifEnter = ifZ = false;
 	}
 	
+	public void setXY(int x, int y){
+		this.x = x;
+		this.y = y;
+	}
+	
 	public int getX(){
 		return x;
 	}

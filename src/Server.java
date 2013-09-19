@@ -9,9 +9,11 @@ public class Server extends Thread
     private Socket client;      // 接收的客戶端Socket
     private String message;                  // 從客戶端讀到的資料
     private Network preinfo;      // 前端介面
+    private int port;
     
     public Server(int port) 
     {
+    	this.port = port;
         try 
         {
             // 根據指定的連接埠建立Socket物件
@@ -50,7 +52,8 @@ public class Server extends Thread
             counter();
             preinfo.frame.setVisible(false);
             
-            new Game(server, client);   //start the pika Game, new Game(server, client);         
+            new Game(client.getInetAddress(), port, 1);   //start the pika Game, new Game(server, client);         
+            server.close();
         }
         catch (IOException e) 
         {

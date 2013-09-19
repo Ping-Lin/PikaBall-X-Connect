@@ -1,84 +1,79 @@
 import javax.swing.*;
-import java.awt.event.*;
 import java.net.*;
 import java.io.*;
 
 public class vsPlayerClient extends Thread
 {
-	private JFrame frame2P;
-	private Socket client;        // 客戶端連線Socket物件
-	private BufferedReader theInputStream;  // 讀取客戶端資料的緩衝區
-    private PrintStream theOutputStream;    // 將資料丟出給客戶端的物件
-	private String data;
-
-	public vsPlayerClient(Socket client/*, JFrame f*/)
-	{
-		this.client = client;
-		/*frame2P = f;*/
+	private InetAddress serverIp;   //server IP
+	private int port;   //server port
+	private String msg, smsg;   //receive message and send massage
+	
+    private String pika1PosX, pika1PosY, pikaBallX, pikaBallY;
+    private String pika2PosX, pika2PosY;
+    
+	public vsPlayerClient(InetAddress host, int port){
+		this.serverIp = host;
+		this.port = port;
 	}
 	
 	public void run()
 	{
-        try 
-        {
-        	
-        	// 建立讀取緩衝區
-			theInputStream = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			
-			// 建立資料丟出物件
-			theOutputStream = new PrintStream(client.getOutputStream());
-			
-			// 利用迴圈讀取資料
-			while((data = theInputStream.readLine()) != null) 
-			{
-				if(data.equals("win")){
-					JOptionPane.showMessageDialog(null,"You lose!!");
-					frame2P.dispose();
-					//new Menu();
-					try 
-					{
-						client.close();
-					}
-					catch (IOException e1) 
-					{
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-			}
-			
-			
-			
-        }
-        catch (IOException e) 
-        {
-			// TODO Auto-generated catch block
-        	e.printStackTrace();
-        	JOptionPane.showMessageDialog(null, e.toString(),"Error!!", JOptionPane.ERROR_MESSAGE);
-		}
+		final int SIZE = 8192;   //set up max size of message	
+		byte buffer[] = new byte[SIZE];   //buffer
+
+    	byte sendBuffer[];
+    	while(true){
+    		
+    		try{
+    			//send
+    			sendBuffer = smsg.getBytes();   //將訊息字串轉換為位元串
+    			DatagramPacket packet = new DatagramPacket(sendBuffer, sendBuffer.length, serverIp, port);   //指定傳送對象,將位元串封裝成為封包
+				DatagramSocket client = new DatagramSocket();   //傳送的Udp socket
+				client.send(packet);
+				client.close();
+				
+				//receive
+				DatagramSocket server = new DatagramSocket(port);
+				DatagramPacket packet0 = new DatagramPacket(buffer, buffer.length);
+				server.receive(packet0);   //receive package
+				msg = new String(buffer, 0, packet0.getLength());
+				splitLetter(msg);
+				server.close();
+    		}
+    		catch(NullPointerException e){
+    			//e.printStackTrace();
+    		}
+    		catch(IOException e){
+    			//e.printStackTrace();
+    		}
+    	}
 	}
 	
-	public void dataOutput(String data) 
-    {
-        theOutputStream.println(data); // 客戶端丟出資料的方法
-    }
+	private void splitLetter(String m){
+		String[] msg = m.split(":");
+		pika2PosX = msg[0];
+		pika2PosY = msg[1];
+	}
 	
-	private class interruptListener extends MouseAdapter
-	{
-		public void mouseClicked(MouseEvent e)
-		{
-			try 
-			{
-				client.close();
-			}
-			catch (IOException e1) 
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-            frame2P.dispose();
-            new Network();
-		}
+	public int getPika2PosX(){
+		if(pika2PosX != null)
+			return Integer.parseInt(pika2PosX);
+		else
+			return 670;
+	}
+	
+	public int getPika2PosY(){
+		if(pika2PosY != null)
+			return Integer.parseInt(pika2PosY);
+		else
+			return 500;
+	}
+
+	public void pikaOutPut(String x, String y, String ballX, String ballY){
+		pika1PosX = x;
+		pika1PosY = y;
+		pikaBallX = ballX;
+		pikaBallY = ballY;
+		smsg = pika1PosX + ":" + pika1PosY + ":" + pikaBallX + ":" + pikaBallY;
 	}
 }

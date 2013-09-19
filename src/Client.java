@@ -50,8 +50,8 @@ public class Client extends Thread
             preinfo.update();
             counter();
             preinfo.frame.setVisible(false);
-            new Game(client);   //start pika game, client
-            //new PlayMap(4, 5, type, 2,client);
+            new Game(host, port);   //start pika game, client
+            client.close();
         }
         catch (IOException e) 
         {
