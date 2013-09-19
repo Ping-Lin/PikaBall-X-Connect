@@ -16,12 +16,12 @@ public class Record extends JPanel{
 	public Record(){
 		countLabel1 = new JLabel("0");
 		countLabel2 = new JLabel("1");
-		width = 800;
+		width = 850;
 		height = 200;
 		x = 0;
 		y = 0;
-		count1 = 0;
-		count2 = 0;
+		count1 = 10;
+		count2 = 10;
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ScheduleTask(), 0, 100);
 		
@@ -31,14 +31,14 @@ public class Record extends JPanel{
 		this.setOpaque(false);
 		this.setVisible(true);
 		
-		countLabel1.setPreferredSize(new Dimension(80,80));
+		countLabel1.setPreferredSize(new Dimension(120,80));
 		countLabel1.setBounds(80, 30, 80, 80);
-		countLabel1.setFont(new Font("Times-Roman", Font.BOLD | Font.ITALIC, 70));   //設定字型、粗體、顏色
+		countLabel1.setFont(new Font("Times-Roman", Font.BOLD | Font.ITALIC, 60));   //設定字型、粗體、顏色
 		countLabel1.setForeground(Color.RED);   //設定字體顏色
 		
-		countLabel2.setPreferredSize(new Dimension(80,80));
+		countLabel2.setPreferredSize(new Dimension(120,80));
 		countLabel2.setBounds(650, 30, 80, 80);
-		countLabel2.setFont(new Font("Times-Roman", Font.BOLD | Font.ITALIC, 70));   //設定字型、粗體、顏色
+		countLabel2.setFont(new Font("Times-Roman", Font.BOLD | Font.ITALIC, 60));   //設定字型、粗體、顏色
 		countLabel2.setForeground(Color.RED);   //設定字體顏色
 		
 		this.add(countLabel1);
