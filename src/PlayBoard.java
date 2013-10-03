@@ -131,8 +131,9 @@ public class PlayBoard extends JPanel{
 			pika1.move();
 			pika2.setX(clientskt.getPika2PosX());   //從客戶端接收pika1的位置
 			pika2.setY(clientskt.getPika2PosY());   //從客戶端接收pika1的位置
-			pikaBall.move();
-			clientskt.pikaOutPut(Integer.toString(pika1.getX()), Integer.toString(pika1.getY()), Integer.toString(pikaBall.getX()), Integer.toString(pikaBall.getY()));   //將pika1和ball的資料給server端
+			//pikaBall.move();
+			pikaBall.setXY(clientskt.getPikaBallPosX(), clientskt.getPikaBallPosY());
+			clientskt.pikaOutPut(Integer.toString(pika1.getX()), Integer.toString(pika1.getY()));   //將pika1和ball的資料給server端
 			collision();
 			repaint();
 		}

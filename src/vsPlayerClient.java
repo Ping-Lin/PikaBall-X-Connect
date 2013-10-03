@@ -7,9 +7,7 @@ public class vsPlayerClient extends Thread
 	private InetAddress serverIp;   //server IP
 	private int port;   //server port
 	private String msg, smsg;   //receive message and send massage
-	
-    private String pika1PosX, pika1PosY, pikaBallX, pikaBallY;
-    private String pika2PosX, pika2PosY;
+    private String pika1PosX, pika1PosY, pika2PosX, pika2PosY, pikaBallX, pikaBallY;
     
 	public vsPlayerClient(InetAddress host, int port){
 		this.serverIp = host;
@@ -53,6 +51,8 @@ public class vsPlayerClient extends Thread
 		String[] msg = m.split(":");
 		pika2PosX = msg[0];
 		pika2PosY = msg[1];
+		pikaBallX = msg[2];
+		pikaBallY = msg[3];
 	}
 	
 	public int getPika2PosX(){
@@ -68,12 +68,26 @@ public class vsPlayerClient extends Thread
 		else
 			return 500;
 	}
+	
+	public int getPikaBallPosX(){
+		if(pikaBallX != null)
+			return Integer.parseInt(pikaBallX);
+		else
+			return 630;
+	}
+	
+	public int getPikaBallPosY(){
+		if(pikaBallY != null)
+			return Integer.parseInt(pikaBallY);
+		else
+			return 10;
+	}
 
-	public void pikaOutPut(String x, String y, String ballX, String ballY){
+	public void pikaOutPut(String x, String y){
 		pika1PosX = x;
 		pika1PosY = y;
-		pikaBallX = ballX;
-		pikaBallY = ballY;
-		smsg = pika1PosX + ":" + pika1PosY + ":" + pikaBallX + ":" + pikaBallY;
+//		pikaBallX = ballX;
+//		pikaBallY = ballY;
+		smsg = pika1PosX + ":" + pika1PosY;
 	}
 }

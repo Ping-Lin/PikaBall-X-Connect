@@ -57,8 +57,8 @@ public class vsPlayerServer extends Thread
 		String[] msg = m.split(":");
 		pika1PosX = msg[0];
 		pika1PosY = msg[1];
-		pikaBallX = msg[2];
-		pikaBallY = msg[3];
+//		pikaBallX = msg[2];
+//		pikaBallY = msg[3];
 	}
 	
 	public int getPika1PosX(){
@@ -75,23 +75,25 @@ public class vsPlayerServer extends Thread
 			return 500;
 	}
 	
-	public int getPikaBallPosX(){
-		if(pikaBallX != null)
-			return Integer.parseInt(pikaBallX);
-		else
-			return 630;
-	}
+//	public int getPikaBallPosX(){
+//		if(pikaBallX != null)
+//			return Integer.parseInt(pikaBallX);
+//		else
+//			return 630;
+//	}
+//	
+//	public int getPikaBallPosY(){
+//		if(pikaBallY != null)
+//			return Integer.parseInt(pikaBallY);
+//		else
+//			return 10;
+//	}
 	
-	public int getPikaBallPosY(){
-		if(pikaBallY != null)
-			return Integer.parseInt(pikaBallY);
-		else
-			return 10;
-	}
-	
-	public void pikaOutPut(String x, String y){
+	public void pikaOutPut(String x, String y, String ballX, String ballY){
 		pika2PosX = x;
 		pika2PosY = y;
-		smsg = pika2PosX + ":" + pika2PosY;
+		pikaBallX = ballX;
+		pikaBallY = ballY;
+		smsg = pika2PosX + ":" + pika2PosY + ":" + pikaBallX + ":" + pikaBallY;
 	}
 }

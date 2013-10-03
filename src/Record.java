@@ -20,8 +20,8 @@ public class Record extends JPanel{
 		height = 200;
 		x = 0;
 		y = 0;
-		count1 = 10;
-		count2 = 10;
+		count1 = 0;
+		count2 = 0;
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new ScheduleTask(), 0, 100);
 		
